@@ -1,4 +1,5 @@
 {
+    "python.pythonPath": "/Users/mac/.local/share/virtualenvs/airbnb-clone-0w2NDejJ/bin/python",
     "python.linting.flake8Enabled": true,
     "python.linting.pylintEnabled": false,
     "python.linting.enabled": true,
