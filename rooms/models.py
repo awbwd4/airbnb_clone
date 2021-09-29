@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.deletion import PROTECT
 from core import models as core_models
 from django_countries.fields import CountryField
 from users import models as user_models
@@ -10,17 +11,45 @@ from users import models as user_models
 
 
 class AbstractItem(core_models.TimeStampModel):
+
+    """Abstract Item"""
+
+    name = models.CharField(max_length=80)
+    # name2 = models.CharField(max_length=80)
+    # 왜 name2를 추가하니 에러가 날까?
+
     class Meta:
         abstract = True
-
-    """ Abstract Item """
-    name = models.CharField(max_length=80)
 
     def __str__(self):
         return self.name
 
 
 class RoomType(AbstractItem):
+
+    """RoomType Object Definition"""
+
+    pass
+
+
+class Amenity(AbstractItem):
+
+    """Amenity Model Definition"""
+
+    pass
+
+
+class Facility(AbstractItem):
+
+    """Facilities Model Definition"""
+
+    pass
+
+
+class HouseRule(AbstractItem):
+
+    """HouseRule Model Definition"""
+
     pass
 
 
@@ -42,7 +71,10 @@ class Room(core_models.TimeStampModel):
     check_out = models.TimeField()
     instant_book = models.BooleanField(default=False)
     host = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
-    room_type = models.ManyToManyField(RoomType, blank=True)
+    room_type = models.ForeignKey(RoomType, on_delete=models.SET_NULL, null=True)
+    amenities = models.ManyToManyField(Amenity)
+    facilities = models.ManyToManyField(Facility)
+    house_rules = models.ManyToManyField(HouseRule)
 
     def __str__(self):
         return self.name
