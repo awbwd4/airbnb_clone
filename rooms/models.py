@@ -2,7 +2,8 @@ from django.db import models
 from django.db.models.deletion import PROTECT
 from core import models as core_models
 from django_countries.fields import CountryField
-from users import models as user_models
+
+# from users import models as user_models
 
 
 # from django_countries
@@ -65,6 +66,8 @@ class Photo(core_models.TimeStampModel):
     caption = models.CharField(max_length=80)
     file = models.ImageField()
     rooms = models.ForeignKey("Room", on_delete=models.CASCADE)
+    # photo를 room과 연결시킴
+    # String 으로 하면 django가 자동으로 room 클래스를 읽는다.
 
     def __str__(self):
         return self.caption
@@ -87,16 +90,12 @@ class Room(core_models.TimeStampModel):
     check_in = models.TimeField()
     check_out = models.TimeField()
     instant_book = models.BooleanField(default=False)
-    host = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
-    room_type = models.ForeignKey(RoomType, on_delete=models.SET_NULL, null=True)
-    amenities = models.ManyToManyField(Amenity, blank=True)
-    facilities = models.ManyToManyField(Facility, blank=True)
-    house_rules = models.ManyToManyField(HouseRule, blank=True)
-    # host = models.ForeignKey("User", on_delete=models.CASCADE)
-    # room_type = models.ForeignKey("RoomType", on_delete=models.SET_NULL, null=True)
-    # amenities = models.ManyToManyField("Amenity", blank=True)
-    # facilities = models.ManyToManyField("Facility", blank=True)
-    # house_rules = models.ManyToManyField("HouseRule", blank=True)
+    host = models.ForeignKey("users.User", on_delete=models.CASCADE)
+    # host = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
+    room_type = models.ForeignKey("RoomType", on_delete=models.SET_NULL, null=True)
+    amenities = models.ManyToManyField("Amenity", blank=True)
+    facilities = models.ManyToManyField("Facility", blank=True)
+    house_rules = models.ManyToManyField("HouseRule", blank=True)
 
     def __str__(self):
         return self.name
