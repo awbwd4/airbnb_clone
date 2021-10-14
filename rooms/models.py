@@ -3,6 +3,10 @@ from django.db.models.deletion import PROTECT
 from core import models as core_models
 from django_countries.fields import CountryField
 
+
+# from django_cities.fields import CountryField
+# from cities.models
+
 # from users import models as user_models
 
 
@@ -81,6 +85,7 @@ class Room(core_models.TimeStampModel):
     description = models.TextField()
     country = CountryField()
     city = models.CharField(max_length=80)
+    # city
     price = models.IntegerField()
     address = models.CharField(max_length=140)
     guests = models.IntegerField()
@@ -91,7 +96,6 @@ class Room(core_models.TimeStampModel):
     check_out = models.TimeField()
     instant_book = models.BooleanField(default=False)
     host = models.ForeignKey("users.User", on_delete=models.CASCADE)
-    # host = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
     room_type = models.ForeignKey("RoomType", on_delete=models.SET_NULL, null=True)
     amenities = models.ManyToManyField("Amenity", blank=True)
     facilities = models.ManyToManyField("Facility", blank=True)
