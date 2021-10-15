@@ -69,7 +69,7 @@ class Photo(core_models.TimeStampModel):
 
     caption = models.CharField(max_length=80)
     file = models.ImageField()
-    rooms = models.ForeignKey("Room", on_delete=models.CASCADE)
+    rooms = models.ForeignKey("Room", related_name="photos", on_delete=models.CASCADE)
     # photo를 room과 연결시킴
     # String 으로 하면 django가 자동으로 room 클래스를 읽는다.
 
@@ -95,11 +95,15 @@ class Room(core_models.TimeStampModel):
     check_in = models.TimeField()
     check_out = models.TimeField()
     instant_book = models.BooleanField(default=False)
-    host = models.ForeignKey("users.User", on_delete=models.CASCADE)
-    room_type = models.ForeignKey("RoomType", on_delete=models.SET_NULL, null=True)
-    amenities = models.ManyToManyField("Amenity", blank=True)
-    facilities = models.ManyToManyField("Facility", blank=True)
-    house_rules = models.ManyToManyField("HouseRule", blank=True)
+    host = models.ForeignKey(
+        "users.User", related_name="rooms", on_delete=models.CASCADE
+    )
+    room_type = models.ForeignKey(
+        "RoomType", related_name="rooms", on_delete=models.SET_NULL, null=True
+    )
+    amenities = models.ManyToManyField("Amenity", related_name="rooms", blank=True)
+    facilities = models.ManyToManyField("Facility", related_name="rooms", blank=True)
+    house_rules = models.ManyToManyField("HouseRule", related_name="rooms", blank=True)
 
     def __str__(self):
         return self.name
