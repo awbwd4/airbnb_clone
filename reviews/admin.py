@@ -8,7 +8,5 @@ class ReviewAdmin(admin.ModelAdmin):
     """Review Admin Definition"""
 
     """I LOVE SALQUANGE!!"""
-    
-    pass
 
-
+    list_display = ("__str__", "rating_average")

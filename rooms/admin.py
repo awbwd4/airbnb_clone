@@ -7,10 +7,10 @@ class ItemAdmin(admin.ModelAdmin):
 
     """Item Admin Definition"""
 
-    list
+    list_display = ("name", "used_by")
 
     def used_by(self, obj):
-        return obj.rooms.count()
+        return obj.rooms.count()  # 아이템들이 쓰이는 방의 개수?
 
 
 # Register your models here.
@@ -52,10 +52,9 @@ class RoomAdmin(admin.ModelAdmin):
         "check_out",
         "instant_book",
         "room_type",
-        # "facilities",
         "count_amenities",
-        "count_photos"
-        # "house_rules",
+        "count_photos",
+        "total_rating",
     )
 
     ordering = (
