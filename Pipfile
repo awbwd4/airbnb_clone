@@ -5,10 +5,16 @@ name = "pypi"
 
 [packages]
 django = "==2.2.5"
+pillow = "*"
+django-countries = "*"
+django-cities = "*"
 
 [dev-packages]
-
-
+flake8 = "*"
+black = "*"
 
 [requires]
 python_version = "3.9"
+
+[pipenv]
+allow_prereleases = true
