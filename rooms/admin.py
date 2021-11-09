@@ -14,11 +14,18 @@ class ItemAdmin(admin.ModelAdmin):
         return obj.rooms.count()  # 아이템들이 쓰이는 방의 개수?
 
 
+class PhotoInLine(admin.TabularInline):
+
+    model = models.Photo
+
+
 # Register your models here.
 @admin.register(models.Room)
 class RoomAdmin(admin.ModelAdmin):
 
     """Room Admin Definition"""
+
+    inlines = (PhotoInLine,)
 
     fieldsets = (
         (
@@ -76,6 +83,7 @@ class RoomAdmin(admin.ModelAdmin):
         "country",
     )
 
+    raw_id_fields = ("host",)
     # fields = ("country",)
     search_fields = ("^city", "^host__username")
     # search_fields = ("^city", "host")  # foreign key면 prefix 안먹힘?
