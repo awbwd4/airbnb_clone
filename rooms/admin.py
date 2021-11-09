@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import mark_safe
 from . import models
 
 
@@ -13,11 +14,18 @@ class ItemAdmin(admin.ModelAdmin):
         return obj.rooms.count()  # 아이템들이 쓰이는 방의 개수?
 
 
+class PhotoInLine(admin.TabularInline):
+
+    model = models.Photo
+
+
 # Register your models here.
 @admin.register(models.Room)
 class RoomAdmin(admin.ModelAdmin):
 
     """Room Admin Definition"""
+
+    inlines = (PhotoInLine,)
 
     fieldsets = (
         (
@@ -75,6 +83,7 @@ class RoomAdmin(admin.ModelAdmin):
         "country",
     )
 
+    raw_id_fields = ("host",)
     # fields = ("country",)
     search_fields = ("^city", "^host__username")
     # search_fields = ("^city", "host")  # foreign key면 prefix 안먹힘?
@@ -96,4 +105,14 @@ class RoomAdmin(admin.ModelAdmin):
 @admin.register(models.Photo)
 class PhotoAdmin(admin.ModelAdmin):
 
-    pass
+    """Photo Admin Definition"""
+
+    list_display = ("__str__", "get_thumbnail")
+
+    def get_thumbnail(self, obj):
+        # print(obj.file.url)
+        # print(type(obj.file))
+        # return obj.file.url
+        return mark_safe(f'<img width="50px" src="{obj.file.url}" />')
+
+    get_thumbnail.short_description = "Thumbnail"
