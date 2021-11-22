@@ -9,6 +9,8 @@ pillow = "*"
 django-countries = "*"
 django-cities = "*"
 django-seed = "*"
+psycopg2-binary = "*"
+configparser = "*"
 
 [dev-packages]
 flake8 = "*"
