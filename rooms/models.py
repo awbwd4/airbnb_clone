@@ -68,8 +68,8 @@ class Photo(core_models.TimeStampModel):
     """Photo Model Definition"""
 
     caption = models.CharField(max_length=80)
-    file = models.ImageField(upload_to=" ")
-    rooms = models.ForeignKey("Room", related_name="photos", on_delete=models.CASCADE)
+    room = models.ForeignKey("Room", related_name="photos", on_delete=models.CASCADE)
+    file = models.ImageField(upload_to="room_photos")
     # photo를 room과 연결시킴
     # String 으로 하면 django가 자동으로 room 클래스를 읽는다.
 
