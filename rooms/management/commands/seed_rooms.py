@@ -1,6 +1,9 @@
+from audioop import add
 import random
 from django.core.management.base import BaseCommand
+from django.contrib.admin.utils import flatten
 from django_seed import Seed
+import faker
 from rooms import models as room_models
 from users import models as user_models
 
@@ -14,7 +17,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--number",
-            default=2,
+            default=1,
             type=int,
             help="how many rooms do you want to create",
         )
@@ -25,10 +28,48 @@ class Command(BaseCommand):
         all_user = user_models.User.objects.all()
         all_users = user_models.User.objects.all()
         room_types = room_models.RoomType.objects.all()
+        print(room_types, all_users)
         seeder.add_entity(
             room_models.Room,
             number,
-            {"host": lambda x: random.choice(all_users)},
+            {
+                "name": lambda x: seeder.faker.address(),
+                "host": lambda x: random.choice(all_users),
+                "room_type": lambda x: random.choice(room_types),
+                "guests": lambda x: random.randint(1, 10),
+                "price": lambda x: random.randint(1, 300),
+                "beds": lambda x: random.randint(1, 5),
+                "bedrooms": lambda x: random.randint(1, 5),
+                "baths": lambda x: random.randint(1, 5),
+            },
         )
-        seeder.execute()
+        created_photos = seeder.execute()
+        created_clean = flatten(list(created_photos.values()))
+        amenities = room_models.Amenity.objects.all()
+        facilities = room_models.Facility.objects.all()
+        rules = room_models.HouseRule.objects.all()
+
+        for pk in created_clean:
+            potato = room_models.Room.objects.get(pk=pk)
+            for i in range(3, random.randint(10, 30)):
+                room_models.Photo.objects.create(
+                    caption=seeder.faker.sentence(),
+                    room=potato,
+                    file=f"room_photos/{random.randint(1,31)}.webp",
+                )
+            for a in amenities:
+                magic_number = random.randint(0, 15)
+                if magic_number % 2 == 0:
+                    potato.amenities.add(a)
+
+            for f in facilities:
+                magic_number = random.randint(0, 15)
+                if magic_number % 2 != 0:
+                    potato.facilities.add(f)
+
+            for r in rules:
+                magic_number = random.randint(0, 15)
+                if magic_number % 2 == 0:
+                    potato.house_rules.add(r)
+
         self.stdout.write(self.style.SUCCESS(f"{number} rooms created!!"))

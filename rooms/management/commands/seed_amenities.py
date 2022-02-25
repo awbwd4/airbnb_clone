@@ -40,7 +40,7 @@ class Command(BaseCommand):
             "Private bathroom",
         ]
         for a in amenities:
-            Amenity.objects.create(name=a)
+            Amenity.objects.create(name=a)  ## a라는 Amenity 객체 생성
         self.stdout.write(self.style.SUCCESS("Amenities Created!!"))
 
         # times = options.get("times")
