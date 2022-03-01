@@ -1,6 +1,6 @@
-from django.http import Http404
+# from django.http import Http404
 from django.utils import timezone
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.urls import reverse
 from django.shortcuts import render, redirect
 from . import models
@@ -8,6 +8,10 @@ from . import models
 
 ##ListView를 사용한 ClassBasedView
 class HomeView(ListView):
+
+    ###제네릭view인 ListView는 템플릿명이 명시적으로 지정되지 않을 경우
+    ### 디폴트로 "모델명_list.html"을 템플릿 명으로 사용한다.
+    ###이 경우에는 models.Room을 사용하므로 "room_list.html"
 
     """Home View Definition"""
 
@@ -27,16 +31,38 @@ class HomeView(ListView):
         return context
 
 
-def room_detail(request, pk):
-    try:
-        room = models.Room.objects.get(pk=pk)
-        print(pk)
-        print(room)
-        return render(request, "rooms/detail.html", {"room": room})
-    except models.Room.DoesNotExist:
-        # return redirect("/")
-        # return redirect(reverse("core:home"))
-        raise Http404()
+class RoomDetail(DetailView):
+
+    ###제네릭view인 DetailView 템플릿명이 명시적으로 지정되지 않을 경우
+    ### 디폴트로 "모델명_detial.html"을 템플릿 명으로 사용한다.
+    ###이 경우에는 models.Room을 사용하므로 "room_detail.html"
+
+    """RoomDetail Definition"""
+
+    model = models.Room
+
+
+def search(request):
+    city = request.GET.get("city")
+    city = str.capitalize(city)  ##db가 대문자로 시작함
+    return render(
+        request,
+        "rooms/search.html",
+        {"city": city},
+    )
+
+
+# 방 디테일 뷰의 fbv
+# def room_detail(request, pk):
+#     try:
+#         room = models.Room.objects.get(pk=pk)
+#         print(pk)
+#         print(room)
+#         return render(request, "rooms/detail.html", {"room": room})
+#     except models.Room.DoesNotExist:
+#         # return redirect("/")
+#         # return redirect(reverse("core:home"))
+#         raise Http404()
 
 
 # from math import ceil
