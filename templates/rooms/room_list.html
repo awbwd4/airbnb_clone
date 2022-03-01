@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block page_name %}HOME{% endblock page_name %}
+{% block page_title %}HOME{% endblock page_title %}
 
 
 {% block content %}
@@ -8,7 +8,16 @@
     {{now}}
 
     {% for room in rooms %}
-        <h1>{{room.name}} / ${{room.price}}</h1>
+        <h3>
+            {% comment %} <a href="/rooms/{{room.pk}}"> {% endcomment %}
+            {% comment %}   url "url네임스페이스:경로" 아규먼트        {% endcomment %}
+            <a href="{% url 'rooms:detail' room.pk %}">
+                {{room.name}} / ${{room.price}}
+            </a>
+        </h3>
+
+
+
     {% endfor %} 
 
     <h5>
