@@ -4,8 +4,34 @@
     Search
 {% endblock page_title %}
 
-{% block content %}
-       <h1>Search!!</h1>
+{% block search-bar %}
+{% endblock search-bar %}
 
-       <h4>Searching by {{city}}</h4>
-{% endblock %}
+{% block content %}
+<h1>Search!!</h1>
+
+<h4>Searching by {{city}}</h4>
+
+<form method="get" action="{%url 'rooms:search' %}">
+    <div>
+        <label for="city">City</label>
+        <input value="{{city}}" id="city" name="city" placeholder="Search by City_Search.html"/> </form>
+    </div>
+
+    <div>
+        <label for="country">Country</label>
+        <select name="country" id="country">
+            {% for country in countries %}
+                <option value="{{country.code}}">{{country.name}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <button>Search</button>
+    {% comment %}
+         따로 "input=submit"을 지정하지 않을 경우
+        form 태그 안에 button이 하나만 있다면
+        html에서는 이를 submit 버튼으로 인식한다.
+    {% endcomment %}
+</form>
+{% endblock content %}
