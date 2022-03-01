@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.views.generic import ListView, DetailView
 from django.urls import reverse
 from django.shortcuts import render, redirect
+from django_countries import countries
 from . import models
 
 
@@ -43,12 +44,13 @@ class RoomDetail(DetailView):
 
 
 def search(request):
-    city = request.GET.get("city")
+    city = request.GET.get("city", "Anywhere")
+    print(city)
     city = str.capitalize(city)  ##db가 대문자로 시작함
     return render(
         request,
         "rooms/search.html",
-        {"city": city},
+        {"city": city, "countries": countries},
     )
 
 
