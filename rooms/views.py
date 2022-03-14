@@ -44,9 +44,12 @@ class RoomDetail(DetailView):
 
 
 def search(request):
-    city = request.GET.get("city", "Anywhere")
+    city = request.GET.get("city", "anywhere")
+    print(request.GET.get("city"))
     print(city)
     city = str.capitalize(city)  ##db가 대문자로 시작함
+    if len(city) == 0:
+        city = "Anywhere"
     return render(
         request,
         "rooms/search.html",
