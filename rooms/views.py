@@ -38,6 +38,8 @@ class RoomDetail(DetailView):
     ### 디폴트로 "모델명_detial.html"을 템플릿 명으로 사용한다.
     ###이 경우에는 models.Room을 사용하므로 "room_detail.html"
 
+    ### 깃 테스트
+
     """RoomDetail Definition"""
 
     model = models.Room
