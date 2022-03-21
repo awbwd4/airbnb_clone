@@ -38,7 +38,7 @@ class RoomDetail(DetailView):
     ### 디폴트로 "모델명_detial.html"을 템플릿 명으로 사용한다.
     ###이 경우에는 models.Room을 사용하므로 "room_detail.html"
 
-    ### 깃 테스트
+    ### 깃 테스트햣
 
     """RoomDetail Definition"""
 
@@ -46,16 +46,21 @@ class RoomDetail(DetailView):
 
 
 def search(request):
-    city = request.GET.get("city", "anywhere")
-    print(request.GET.get("city"))
-    print(city)
+    print(request.GET)
+    city = request.GET.get("city", "Anywhere")
+    # 검색바가 아닌 url에 아무런 조건이 없을경우 "Anywhere"
+    room_types = models.RoomType.objects.all()
     city = str.capitalize(city)  ##db가 대문자로 시작함
-    if len(city) == 0:
-        city = "Anywhere"
+    # if len(city) == 0:
+    #     city = "Anywhere"
     return render(
         request,
         "rooms/search.html",
-        {"city": city, "countries": countries},
+        {
+            "city": city,
+            "countries": countries,
+            "room_types": room_types,
+        },
     )
 
 
