@@ -46,21 +46,44 @@ class RoomDetail(DetailView):
 
 
 def search(request):
-    print(request.GET)
+
+    """url에서 값을 가져옴"""
     city = request.GET.get("city", "Anywhere")
-    # 검색바가 아닌 url에 아무런 조건이 없을경우 "Anywhere"
-    room_types = models.RoomType.objects.all()
     city = str.capitalize(city)  ##db가 대문자로 시작함
-    # if len(city) == 0:
-    #     city = "Anywhere"
+    # 검색바가 아닌 url에 아무런 조건이 없을경우 "Anywhere"
+    if len(city) == 0:
+        city = "Anywhere"
+    country = request.GET.get("country", "KR")
+    room_type = int(request.GET.get("room_type", 0))
+    price = int(request.GET.get("price", 0))
+    guests = int(request.GET.get("guests", 0))
+    bedrooms = int(request.GET.get("bedrooms", 0))
+    beds = int(request.GET.get("beds", 0))
+    baths = int(request.GET.get("baths", 0))
+
+    form = {
+        "city": city,
+        "s_room_type": room_type,
+        "s_country": country,
+        "price": price,
+        "guests": guests,
+        "bedrooms": bedrooms,
+        "beds": beds,
+        "baths": baths,
+    }
+
+    """model에 저장돼있는 모든 룸타입을 가져옴"""
+    room_types = models.RoomType.objects.all()
+
+    choices = {
+        "room_types": room_types,
+        "countries": countries,
+    }
+
     return render(
         request,
         "rooms/search.html",
-        {
-            "city": city,
-            "countries": countries,
-            "room_types": room_types,
-        },
+        {**form, **choices},  # 두개의 dic 타입을 합치는 방법
     )
 
 

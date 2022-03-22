@@ -5,62 +5,62 @@
 
 {% block content %}
 
-    {{now}}
+{{now}}
 
-    {% for room in rooms %}
-        <h3>
-            {% comment %} <a href="/rooms/{{room.pk}}"> {% endcomment %}
-            {% comment %}   url "url네임스페이스:경로" 아규먼트        {% endcomment %}
-            <a href="{% url 'rooms:detail' room.pk %}">
-                {{room.name}} / ${{room.price}}
-            </a>
-        </h3>
+{% for room in rooms %}
+<h3>
+    {% comment %} <a href="/rooms/{{room.pk}}"> {% endcomment %}
+        {% comment %} url "url네임스페이스:경로" 아규먼트 {% endcomment %}
+        <a href="{% url 'rooms:detail' room.pk %}">
+            {{room.name}} / ${{room.price}}
+        </a>
+</h3>
 
 
 
-    {% endfor %} 
+{% endfor %}
 
-    <h5>
-        
-        {% if page_obj.has_previous %}
-            <a href="?page={{page_obj.previous_page_number}}">Previous</a>
-        {% endif %} 
-            
-        Page  {{page_obj.number}} of {{page_obj.paginator.num_pages}}
+<h5>
 
-        
-        {% if page_obj.has_next %}
-            <a href="?page={{page_obj.next_page_number}}">Next</a>
-        {% endif %}
-        
+    {% if page_obj.has_previous %}
+    <a href="?page={{page_obj.previous_page_number}}">Previous</a>
+    {% endif %}
 
-    </h5>
-    
-    
+    Page {{page_obj.number}} of {{page_obj.paginator.num_pages}}
+
+
+    {% if page_obj.has_next %}
+    <a href="?page={{page_obj.next_page_number}}">Next</a>
+    {% endif %}
+
+
+</h5>
+
+
 {% endblock content %}
-    
 
 
 
 
 
 
-    {% comment %} {% for room in rooms %}
-        <h1>{{room.name}} / ${{room.price}}</h1>
-    {% endfor %} 
 
-    <h5>
-        
-        {% if page is not 1 %}
-        <a href="?page={{page|add:-1}}">Previous</a>
-        {% endif %}
-            
-            Page  {{page}} of {{page_count}}
+{% comment %} {% for room in rooms %}
+<h1>{{room.name}} / ${{room.price}}</h1>
+{% endfor %}
 
-        
-        {% if  not page == not page_count%}
-        <a href="?page={{page|add:1}}">Next</a>
-        {% endif %}
-                
+<h5>
 
-    </h5> {% endcomment %}
+    {% if page is not 1 %}
+    <a href="?page={{page|add:-1}}">Previous</a>
+    {% endif %}
+
+    Page {{page}} of {{page_count}}
+
+
+    {% if not page == not page_count%}
+    <a href="?page={{page|add:1}}">Next</a>
+    {% endif %}
+
+
+</h5> {% endcomment %}
