@@ -47,7 +47,7 @@ class RoomDetail(DetailView):
 
 def search(request):
 
-    """url에서 값을 가져옴"""
+    """url에서 값을 가져오는 부분"""
     city = request.GET.get("city", "Anywhere")
     city = str.capitalize(city)  ##db가 대문자로 시작함
     # 검색바가 아닌 url에 아무런 조건이 없을경우 "Anywhere"
@@ -60,6 +60,12 @@ def search(request):
     bedrooms = int(request.GET.get("bedrooms", 0))
     beds = int(request.GET.get("beds", 0))
     baths = int(request.GET.get("baths", 0))
+    instant = request.GET.get("instant", False)
+    super_host = request.GET.get("super_host", False)
+    s_amenities = request.GET.getlist("amenities")
+    s_facilities = request.GET.getlist("facilities")
+
+    print(s_amenities, s_facilities)
 
     form = {
         "city": city,
@@ -70,14 +76,22 @@ def search(request):
         "bedrooms": bedrooms,
         "beds": beds,
         "baths": baths,
+        "s_amenities": s_amenities,
+        "s_faicilities": s_facilities,
+        "instant": instant,
+        "super_host": super_host,
     }
 
-    """model에 저장돼있는 모든 룸타입을 가져옴"""
+    """model에 저장돼있는 값을 가져오는 부분"""
     room_types = models.RoomType.objects.all()
+    amenities = models.Amenity.objects.all()
+    facilities = models.Facility.objects.all()
 
     choices = {
         "room_types": room_types,
         "countries": countries,
+        "amenities": amenities,
+        "facilities": facilities,
     }
 
     return render(
