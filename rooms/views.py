@@ -60,12 +60,10 @@ def search(request):
     bedrooms = int(request.GET.get("bedrooms", 0))
     beds = int(request.GET.get("beds", 0))
     baths = int(request.GET.get("baths", 0))
-    instant = request.GET.get("instant", False)
-    super_host = request.GET.get("super_host", False)
+    instant_book = request.GET.get("instant_book", False)
+    superhost = request.GET.get("superhost", False)
     s_amenities = request.GET.getlist("amenities")
     s_facilities = request.GET.getlist("facilities")
-
-    print(s_amenities, s_facilities)
 
     form = {
         "city": city,
@@ -78,8 +76,8 @@ def search(request):
         "baths": baths,
         "s_amenities": s_amenities,
         "s_faicilities": s_facilities,
-        "instant": instant,
-        "super_host": super_host,
+        "instant_book": instant_book,
+        "superhost": superhost,
     }
 
     """model에 저장돼있는 값을 가져오는 부분"""
@@ -94,15 +92,77 @@ def search(request):
         "facilities": facilities,
     }
 
+    ## 검색조건 필터링
+    filter_args = {}
+
+    ## 검색조건 생성
+    ### 검색조건 1 : 도시
+    if city != "Anywhere":
+        filter_args["city__startswith"] = city
+    ### 검색조건 2 : 국가
+    filter_args["country"] = country
+    ### 검색조건 3 : 방 종류
+    if room_type != 0:
+        filter_args["room_type__pk"] = room_type  # room_type의 pk와 정확히 일치해야 함.
+    ### 검색조건 4 : 가격
+    if price != 0:
+        filter_args["price__lte"] = price  # 고객이 지불하려는 최대 가격
+    ### 검색조건 5 : 게스트 수
+    if guests != 0:
+        filter_args["guests__gte"] = guests  # 게스트 수와 같거나 더 많은 수를 수용할 수 있는 방
+    ### 검색조건 6 : 침실 수
+    if bedrooms != 0:
+        filter_args["bedrooms__gte"] = bedrooms
+    ### 검색조건 7 : 침대 수
+    if beds != 0:
+        filter_args["beds__gte"] = beds
+    ### 검색조건 8 : 화장실 수
+    if baths != 0:
+        filter_args["baths__gte"] = baths
+
+    ### 검색조건 9 : 즉시 예약 가능 여부
+    if bool(instant_book) is True:
+        filter_args["instant_book"] = True
+    ### 검색조건 10 : 즉시 예약 가능 여부
+    if bool(superhost) is True:
+        filter_args["host__superhost"] = True
+        # room 모델에는 superhost여부를 따로 갖고있지 않고
+        # user를 fk로 갖고만 있다.
+        # user모델 안에 들어가면 해당 객체는 superhost여부를 필드값으로 갖고있음.
+
+    rooms = models.Room.objects.filter(**filter_args)
+
+    ### 검색조건 11 : amenity
+    if len(s_amenities) != 0:
+        for s_amenity in s_amenities:
+            # filter_args["amenities__pk"] = int(s_amenity)
+            rooms = rooms.filter(amenities__pk=int(s_amenity))
+    ### 검색조건 12 : facility
+    if len(s_facilities) != 0:
+        for s_facility in s_facilities:
+            # filter_args["facilities__pk"] = int(s_facility)
+            rooms = rooms.filter(facilities__pk=int(s_facility))
+
+    ## 검색조건 출력
+    print(filter_args)
+
+    print(rooms)
+
+    ## 검색조건 적용
+
     return render(
         request,
         "rooms/search.html",
-        {**form, **choices},  # 두개의 dic 타입을 합치는 방법
+        {
+            **form,
+            **choices,  #  ** : 두개의 dic 타입을 합치는 방법
+            "rooms": rooms,
+        },
     )
 
 
 # 방 디테일 뷰의 fbv
-# def room_detail(request, pk):
+# def room_det                  ail(request, pk):
 #     try:
 #         room = models.Room.objects.get(pk=pk)
 #         print(pk)
