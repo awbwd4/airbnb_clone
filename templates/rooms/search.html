@@ -24,15 +24,17 @@ Search
 
     <h5>
 
-      {% if page > 1 %}
-      <a href="?page={{page|add:-1}}">Previous</a>
+      {% if rooms.has_previous %}
+      <a href="{{request.get_full_path}}&page={{romms.previous_page_number}}">Previous</a>
+      <!-- <a href="{{current_url}}&?page={{romms.number|add:-1}}">Previous</a> -->
       {% endif %}
   
-       Page {{page}} of {{page_count}}
+       Page {{rooms.number}} of {{rooms.paginator.num_pages}}
   
   
-      {% if page < page_count %}
-      <a href="?page={{page|add:1}}">Next</a>
+      {% if rooms.has_next %}
+      <a href="{{request.get_full_path}}&page={{rooms.next_page_number}}">Next</a>
+      <!-- <a href="{{current_url}}&?page={{rooms.number|add:1}}">Next</a> -->
       {% endif %}
   
   

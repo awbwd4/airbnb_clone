@@ -1,4 +1,5 @@
 # from django.http import Http404
+from django import template
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, View
 from django.urls import reverse
@@ -50,6 +51,8 @@ class RoomDetail(DetailView):
 class SearchView(ListView):
 
     """SearchView Definition"""
+
+    register = template.Library()
 
     def get(self, request):
         country = request.GET.get("country")
@@ -126,39 +129,36 @@ class SearchView(ListView):
                     # filter_args["facilities__pk"] = int(s_facility)
                     rooms = rooms.filter(facilities=facility)
 
-                print(dir(rooms))
-                print(rooms.count())
+                # print(dir(rooms))
+                # print(rooms.count())
 
-                all_rooms_count = rooms.count()
+                all_rooms = rooms
+
+                print(request.get_full_path())
+
+                current_url = "".join(request.get_full_path().split("page")[0])
+                # if current_url[-1] != "&":
+                #     current_url = (
+                #         "".join(request.get_full_path().split("page")[0]) + "&"
+                #     )
+
+                print(current_url)
 
                 # 페이지네이팅
-                # page = request.GET.get("page", 1)
-                # paginator = Paginator(qs, 10, orphans=5)
                 page = request.GET.get("page", 1)
-
-                print(page)
-                page = int(page or 1)
-                page_size = 10
-                limit = page_size * page
-                offset = limit - page_size
-                ## page : 2 -> 10~20까지 보여줘야 함 -> limit = 10*2 = 20 // offset = 20-10 = 10
-                rooms = rooms[offset:limit]
-                page_count = ceil(all_rooms_count / page_size)
+                paginator = Paginator(all_rooms, 10)
+                rooms = paginator.get_page(page)
 
                 try:
                     # rooms = paginator.get_page(page)
                     print(rooms)
-                    print(page)
-                    print(page_count)
                     return render(
                         request,
                         "rooms/search.html",
                         {
                             "form": form,
                             "rooms": rooms,
-                            "page": page,
-                            "page_count": page_count,
-                            "page_range": range(1, page_count),
+                            "current_url": current_url,
                         },
                     )
                 except EmptyPage:
