@@ -24,15 +24,15 @@ Search
 
     <h5>
 
-      {% if rooms_obj.has_previous %}
-      <a href="?rooms={{rooms_obj.previous_rooms_number}}">Previous</a>
+      {% if page > 1 %}
+      <a href="?page={{page|add:-1}}">Previous</a>
       {% endif %}
   
-      Page {{rooms_obj.number}} of {{rooms_obj.paginator.num_rooms}}
+       Page {{page}} of {{page_count}}
   
   
-      {% if rooms_obj.has_next %}
-      <a href="?rooms={{rooms_obj.next_rooms_number}}">Next</a>
+      {% if page < page_count %}
+      <a href="?page={{page|add:1}}">Next</a>
       {% endif %}
   
   

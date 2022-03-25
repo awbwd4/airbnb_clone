@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator, EmptyPage
 from django_countries import countries
+from math import ceil
 from . import models, forms
 
 
@@ -49,12 +50,6 @@ class RoomDetail(DetailView):
 class SearchView(ListView):
 
     """SearchView Definition"""
-
-    model = models.Room
-    paginate_by = 10
-    paginate_orphans = 5
-    ordering = "created"
-    context_object_name = "rooms"
 
     def get(self, request):
         country = request.GET.get("country")
@@ -120,28 +115,51 @@ class SearchView(ListView):
 
                 rooms = models.Room.objects.filter(**filter_args)
 
-                qs = rooms.order_by("created")
+                rooms = rooms.order_by("created")
 
                 ### 검색조건 11 : amenity
                 for amenity in amenities:
                     # filter_args["amenities__pk"] = int(s_amenity)
-                    qs = qs.filter(amenities=amenity)
+                    rooms = rooms.filter(amenities=amenity)
                 ### 검색조건 12 : facility
                 for facility in facilities:
                     # filter_args["facilities__pk"] = int(s_facility)
-                    qs = qs.filter(facilities=facility)
+                    rooms = rooms.filter(facilities=facility)
+
+                print(dir(rooms))
+                print(rooms.count())
+
+                all_rooms_count = rooms.count()
 
                 # 페이지네이팅
+                # page = request.GET.get("page", 1)
+                # paginator = Paginator(qs, 10, orphans=5)
                 page = request.GET.get("page", 1)
-                paginator = Paginator(qs, 10, orphans=5)
+
+                print(page)
+                page = int(page or 1)
+                page_size = 10
+                limit = page_size * page
+                offset = limit - page_size
+                ## page : 2 -> 10~20까지 보여줘야 함 -> limit = 10*2 = 20 // offset = 20-10 = 10
+                rooms = rooms[offset:limit]
+                page_count = ceil(all_rooms_count / page_size)
 
                 try:
-                    rooms = paginator.get_page(page)
-                    print(dir(rooms))
+                    # rooms = paginator.get_page(page)
+                    print(rooms)
+                    print(page)
+                    print(page_count)
                     return render(
                         request,
                         "rooms/search.html",
-                        {"form": form, "rooms": rooms},
+                        {
+                            "form": form,
+                            "rooms": rooms,
+                            "page": page,
+                            "page_count": page_count,
+                            "page_range": range(1, page_count),
+                        },
                     )
                 except EmptyPage:
                     return redirect("search/")
@@ -159,11 +177,13 @@ class SearchView(ListView):
                 #     except EmptyPage:
                 #         return redirect("/")
         else:
+
+            page = request.GET.get("page", 1)
             form = forms.SearchForm()
             return render(
                 request,
                 "rooms/search.html",
-                {"form": form},
+                {"form": form, "page": page},
             )
         # url에 "country"의 값이 없다면 unbounded form으로 한다.
 
