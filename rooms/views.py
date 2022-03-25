@@ -1,8 +1,9 @@
 # from django.http import Http404
 from django.utils import timezone
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, View
 from django.urls import reverse
 from django.shortcuts import render, redirect
+from django.core.paginator import Paginator, EmptyPage
 from django_countries import countries
 from . import models, forms
 
@@ -45,93 +46,129 @@ class RoomDetail(DetailView):
     model = models.Room
 
 
-def search(request):
+class SearchView(ListView):
 
-    country = request.GET.get("country")
+    """SearchView Definition"""
 
-    if country:
-        form = forms.SearchForm(request.GET)
-        # form에 request객체를 연결하면 bounded form이 된다
-        # 자동으로 데이터 정합성을 체크하게됨.
-        if form.is_valid():  # form의 이상여부 체크
-            print(form.cleaned_data)
+    model = models.Room
+    paginate_by = 10
+    paginate_orphans = 5
+    ordering = "created"
+    context_object_name = "rooms"
 
-            city = form.cleaned_data.get("city")
-            country = form.cleaned_data.get("country")
-            room_type = form.cleaned_data.get("room_type")
-            price = form.cleaned_data.get("price")
-            guests = form.cleaned_data.get("guests")
-            bedrooms = form.cleaned_data.get("bedrooms")
-            beds = form.cleaned_data.get("beds")
-            baths = form.cleaned_data.get("baths")
-            instant_book = form.cleaned_data.get("instant_book")
-            superhost = form.cleaned_data.get("superhost")
-            amenities = form.cleaned_data.get("amenities")
-            facilities = form.cleaned_data.get("facilities")
+    def get(self, request):
+        country = request.GET.get("country")
+        if country:
+            form = forms.SearchForm(request.GET)
+            # form에 request객체를 연결하면 bounded form이 된다
+            # 자동으로 데이터 정합성을 체크하게됨.
+            if form.is_valid():  # form의 이상여부 체크
+                print(form.cleaned_data)
 
-            ## 검색조건 필터링
-            filter_args = {}
+                city = form.cleaned_data.get("city")
+                country = form.cleaned_data.get("country")
+                room_type = form.cleaned_data.get("room_type")
+                price = form.cleaned_data.get("price")
+                guests = form.cleaned_data.get("guests")
+                bedrooms = form.cleaned_data.get("bedrooms")
+                beds = form.cleaned_data.get("beds")
+                baths = form.cleaned_data.get("baths")
+                instant_book = form.cleaned_data.get("instant_book")
+                superhost = form.cleaned_data.get("superhost")
+                amenities = form.cleaned_data.get("amenities")
+                facilities = form.cleaned_data.get("facilities")
 
-            ## 검색조건 생성
-            ### 검색조건 1 : 도시
-            if city != "Anywhere":
-                filter_args["city__startswith"] = city
-            ### 검색조건 2 : 국가
-            filter_args["country"] = country
-            ### 검색조건 3 : 방 종류
-            if room_type is not None:
-                filter_args["room_type"] = room_type  # room_type의 pk와 정확히 일치해야 함.
-            ### 검색조건 4 : 가격
-            if price is not None:
-                filter_args["price__lte"] = price  # 고객이 지불하려는 최대 가격
-            ### 검색조건 5 : 게스트 수
-            if guests is not None:
-                filter_args["guests__gte"] = guests  # 게스트 수와 같거나 더 많은 수를 수용할 수 있는 방
-            ### 검색조건 6 : 침실 수
-            if bedrooms is not None:
-                filter_args["bedrooms__gte"] = bedrooms
-            ### 검색조건 7 : 침대 수
-            if beds is not None:
-                filter_args["beds__gte"] = beds
-            ### 검색조건 8 : 화장실 수
-            if baths is not None:
-                filter_args["baths__gte"] = baths
-            ### 검색조건 9 : 즉시 예약 가능 여부
-            if bool(instant_book) is True:
-                filter_args["instant_book"] = True
-            ### 검색조건 10 : 즉시 예약 가능 여부
-            if bool(superhost) is True:
-                filter_args["host__superhost"] = True
-                # room 모델에는 superhost여부를 따로 갖고있지 않고
-                # user를 fk로 갖고만 있다.
-                # user모델 안에 들어가면 해당 객체는 superhost여부를 필드값으로 갖고있음.
+                ## 검색조건 필터링
+                filter_args = {}
 
-            ## 검색조건 출력
-            print(filter_args)
+                ### 검색조건 1 : 도시
+                ## 검색조건 생성
+                if city != "Anywhere":
+                    filter_args["city__startswith"] = city
+                ### 검색조건 2 : 국가
+                filter_args["country"] = country
+                ### 검색조건 3 : 방 종류
+                if room_type is not None:
+                    filter_args["room_type"] = room_type  # room_type의 pk와 정확히 일치해야 함.
+                ### 검색조건 4 : 가격
+                if price is not None:
+                    filter_args["price__lte"] = price  # 고객이 지불하려는 최대 가격
+                ### 검색조건 5 : 게스트 수
+                if guests is not None:
+                    filter_args["guests__gte"] = guests  # 게스트 수와 같거나 더 많은 수를 수용할 수 있는 방
+                ### 검색조건 6 : 침실 수
+                if bedrooms is not None:
+                    filter_args["bedrooms__gte"] = bedrooms
+                ### 검색조건 7 : 침대 수
+                if beds is not None:
+                    filter_args["beds__gte"] = beds
+                ### 검색조건 8 : 화장실 수
+                if baths is not None:
+                    filter_args["baths__gte"] = baths
+                ### 검색조건 9 : 즉시 예약 가능 여부
+                if bool(instant_book) is True:
+                    filter_args["instant_book"] = True
+                ### 검색조건 10 : 즉시 예약 가능 여부
+                if bool(superhost) is True:
+                    filter_args["host__superhost"] = True
+                    # room 모델에는 superhost여부를 따로 갖고있지 않고
+                    # user를 fk로 갖고만 있다.
+                    # user모델 안에 들어가면 해당 객체는 superhost여부를 필드값으로 갖고있음.
 
-            rooms = models.Room.objects.filter(**filter_args)
+                ## 검색조건 출력
+                print(filter_args)
 
-            ### 검색조건 11 : amenity
-            for amenity in amenities:
-                # filter_args["amenities__pk"] = int(s_amenity)
-                rooms = rooms.filter(amenities=amenity)
-            ### 검색조건 12 : facility
-            for facility in facilities:
-                # filter_args["facilities__pk"] = int(s_facility)
-                rooms = rooms.filter(facilities=facility)
+                rooms = models.Room.objects.filter(**filter_args)
 
-            print(rooms)
-    else:
-        form = forms.SearchForm()
-    # url에 "country"의 값이 없다면 unbounded form으로 한다.
+                qs = rooms.order_by("created")
 
-    return render(
-        request,
-        "rooms/search.html",
-        {
-            "form": form,
-        },
-    )
+                ### 검색조건 11 : amenity
+                for amenity in amenities:
+                    # filter_args["amenities__pk"] = int(s_amenity)
+                    qs = qs.filter(amenities=amenity)
+                ### 검색조건 12 : facility
+                for facility in facilities:
+                    # filter_args["facilities__pk"] = int(s_facility)
+                    qs = qs.filter(facilities=facility)
+
+                # 페이지네이팅
+                page = request.GET.get("page", 1)
+                paginator = Paginator(qs, 10, orphans=5)
+
+                try:
+                    rooms = paginator.get_page(page)
+                    print(dir(rooms))
+                    return render(
+                        request,
+                        "rooms/search.html",
+                        {"form": form, "rooms": rooms},
+                    )
+                except EmptyPage:
+                    return redirect("search/")
+
+                # rooms = gs
+
+                # django의 paginator 사용
+                # def all_rooms(request):
+                #     page = request.GET.get("page", 1)
+                #     room_list = models.Room.objects.all()
+                #     paginator = Paginator(room_list, 10, orphans=5)
+                #     try:
+                #         rooms = paginator.page(int(page))
+                #         return render(request, "rooms/home.html", {"page": rooms})
+                #     except EmptyPage:
+                #         return redirect("/")
+        else:
+            form = forms.SearchForm()
+            return render(
+                request,
+                "rooms/search.html",
+                {"form": form},
+            )
+        # url에 "country"의 값이 없다면 unbounded form으로 한다.
+
+
+# def search(request):
 
 
 # 방 디테일 뷰의 fbv

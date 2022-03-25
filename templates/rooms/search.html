@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block page_title %}
+{% block rooms_title %}
 Search
-{% endblock page_title %}
+{% endblock rooms_title %}
 
 {% block search-bar %}{% endblock search-bar %}
 
@@ -17,10 +17,25 @@ Search
 
 
 <h3>Results</h3>    
+ 
+    {% for room in rooms  %}
+      <h3>{{room.name}}</h3>
+    {% endfor %}
 
-{% for room in rooms  %}
-  <h3>{{room.name}}</h3>
-{% endfor %}
+    <h5>
 
+      {% if rooms_obj.has_previous %}
+      <a href="?rooms={{rooms_obj.previous_rooms_number}}">Previous</a>
+      {% endif %}
+  
+      Page {{rooms_obj.number}} of {{rooms_obj.paginator.num_rooms}}
+  
+  
+      {% if rooms_obj.has_next %}
+      <a href="?rooms={{rooms_obj.next_rooms_number}}">Next</a>
+      {% endif %}
+  
+  
+  </h5>
 
 {% endblock content %}
