@@ -129,20 +129,17 @@ class SearchView(ListView):
                     # filter_args["facilities__pk"] = int(s_facility)
                     rooms = rooms.filter(facilities=facility)
 
-                # print(dir(rooms))
-                # print(rooms.count())
-
                 all_rooms = rooms
 
-                print(request.get_full_path())
+                print("request.get_full_path() : ", request.get_full_path())
 
-                current_url = "".join(request.get_full_path().split("page")[0])
+                current_url = "".join(request.get_full_path().split("&page")[0])
                 # if current_url[-1] != "&":
                 #     current_url = (
                 #         "".join(request.get_full_path().split("page")[0]) + "&"
                 #     )
 
-                print(current_url)
+                print("current_url : ", current_url)
 
                 # 페이지네이팅
                 page = request.GET.get("page", 1)
@@ -150,7 +147,6 @@ class SearchView(ListView):
                 rooms = paginator.get_page(page)
 
                 try:
-                    # rooms = paginator.get_page(page)
                     print(rooms)
                     return render(
                         request,
