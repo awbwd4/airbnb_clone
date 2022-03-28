@@ -131,7 +131,7 @@ class SearchView(ListView):
 
                 all_rooms = rooms
 
-                print("request.get_full_path() : ", request.get_full_path())
+                print("request.get_full_path() [%s]: " % request.get_full_path())
 
                 current_url = "".join(request.get_full_path().split("&page")[0])
                 # if current_url[-1] != "&":
@@ -139,7 +139,7 @@ class SearchView(ListView):
                 #         "".join(request.get_full_path().split("page")[0]) + "&"
                 #     )
 
-                print("current_url : ", current_url)
+                print("current_url [%s] " % current_url)
 
                 # 페이지네이팅
                 page = request.GET.get("page", 1)
