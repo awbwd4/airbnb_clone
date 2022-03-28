@@ -45,9 +45,10 @@
 
 
 
-{% comment %} {% for room in rooms %}
-<h1>{{room.name}} / ${{room.price}}</h1>
-{% endfor %}
+{% comment %}
+    {% for room in rooms %}
+        <h1>{{room.name}} / ${{room.price}}</h1>
+    {% endfor %}
 
 <h5>
 
@@ -63,4 +64,5 @@
     {% endif %}
 
 
-</h5> {% endcomment %}
+</h5>
+{% endcomment %}
