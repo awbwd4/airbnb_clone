@@ -36,8 +36,6 @@ class LoginView(View):
 # email 필드는 null 값을 갖느다.
 
 
-def login_view(request):
-    if request.method == "GET":
-        pass
-    if request.method == "POST":
-        pass
+def log_out(request):
+    logout(request)
+    return redirect(reverse("core:home"))
