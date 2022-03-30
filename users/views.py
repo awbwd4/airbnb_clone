@@ -1,31 +1,25 @@
 from django.views import View
+from django.views.generic import FormView
+from django.urls import reverse_lazy
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import authenticate, login, logout
 from . import forms
 
 
-class LoginView(View):
+class LoginView(FormView):
 
-    # GET 방식
-    def get(self, request):
-        # form = forms.LoginForm()
-        form = forms.LoginForm(initial={"email": "awbwd4@gmail.com"})
-        # print("GET - form.as_p [%s]" % form.as_p)
-        return render(request, "users/login.html", {"form": form})
+    template_name = "users/login.html"
+    form_class = forms.LoginForm
+    success_url = reverse_lazy("core:home")
 
-    # POST 방식
-    def post(self, request):
-        form = forms.LoginForm(request.POST)
-        if form.is_valid():
-            print("cleand_data [%s]" % form.cleaned_data)
-            email = form.cleaned_data.get("email")
-            password = form.cleaned_data.get("password")
-            user = authenticate(request, username=email, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect(reverse("core:home"))
-        return render(request, "users/login.html", {"form": form})
-        print(form)
+    def form_valid(self, form):
+        print("cleand_data [%s]" % form.cleaned_data)
+        email = form.cleaned_data.get("email")
+        password = form.cleaned_data.get("password")
+        user = authenticate(self.request, username=email, password=password)
+        if user is not None:
+            login(self.request, user)
+        return super().form_valid(form)
 
 
 # cleand_data는 모든 필드를 정리해준 것에 대한 결과이다.
