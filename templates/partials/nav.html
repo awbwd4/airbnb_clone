@@ -1,6 +1,21 @@
 <header>
   <a href="{% url 'core:home' %}">Nbnb</a>
   <ul>
-    <li><a href="{%url 'users:login' %}">Login</a></li>
+    
+    {% if user.is_authenticated %}
+      <li><a href="{%url 'users:login' %}">Log out</a></li>
+    {% else %}
+      <li><a href="{%url 'users:login' %}">Log in</a></li>
+    {% endif %}
+
   </ul>
 </header>
+
+<!-- django는 context_processors라는걸 갖고있음
+    이게 뭐냐면 template에 정보를 추가하는 함수임
+    어디서든 그 template으로 접근할 수 있음
+    꼭 해당 view의 context가 아니라도 상관없음.
+
+    이 경우에는 context_precessors가 cookie를 갖고 와서
+    user를 찾고 그걸 template에 자동으로 넣어줌
+-->
