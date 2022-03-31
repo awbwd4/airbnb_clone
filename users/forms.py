@@ -23,24 +23,15 @@ class LoginForm(forms.Form):
             self.add_error("email", forms.ValidationError("User does not exist"))
 
 
-class SignUpForm(forms.Form):
+class SignUpForm(forms.ModelForm):
 
-    # validation 필요x
-    first_name = forms.CharField(max_length=80)
-    last_name = forms.CharField(max_length=80)
+    ## Model Form은 field의 uniqueness를 알아서 검증해준다
+    class Meta:
+        model = models.User
+        fields = ("first_name", "last_name", "email", "birthdate")
 
-    # validation 필요o
-    email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
     password1 = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
-
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        try:
-            models.User.objects.get(email=email)
-            raise forms.ValidationError("User Already Exists with that Email!")
-        except models.User.DoesNotExist:
-            return email
 
     def clean_password1(self):
         password = self.cleaned_data.get("password")
@@ -51,16 +42,13 @@ class SignUpForm(forms.Form):
         else:
             return password
 
-    def save(self):  # 회원 가입시 -> form 객체 생성
-        first_name = self.cleaned_data.get("first_name")
-        last_name = self.cleaned_data.get("last_name")
+    def save(self, commit: bool = ...):
+        user = super().save(commit=False)
+        # 위의 정보로 user객체를 생성하긴 하는데 db에 commit은 안함
+
         email = self.cleaned_data.get("email")
         password = self.cleaned_data.get("password")
-
-        # models.User.objects.create()
-        # 이방식은 비밀번호 암호화가 불가능함
-
-        user = models.User.objects.create_user(email, email, password)
-        user.first_name = first_name
-        user.last_name = last_name
+        user.username = email
+        user.set_password(password)
         user.save()
+        # 새로 원하는 필드값을 만든 뒤에 user객체에 덮어씌우기 후 save & commit
