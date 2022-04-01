@@ -144,4 +144,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 
 MEDIA_URL = "/media/"
 
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000/admin/*"]
+
+# django admin CSRF
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000/admin/"]
+
+
+# Email Configuration
+EMAIL_HOST = "smtp.mailgun.org"
+EMAIL_PORT = "587"
+
+EMAIL_HOST_USER = os.environ.get("MAILGUN_USERNAME")
+EMAIL_HOST_PASSWORD = os.environ.get("MAILGUN_PASSWORD")
+EMAIL_FROM = "sexy-guy@sandboxa775f8a3470345028f678a8889e60baf.mailgun.org"

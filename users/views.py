@@ -19,7 +19,6 @@ class LoginView(FormView):
     # view가 필요할때만 호출
 
     def form_valid(self, form):
-        print("cleand_data [%s]" % form.cleaned_data)
         email = form.cleaned_data.get("email")
         password = form.cleaned_data.get("password")
         user = authenticate(self.request, username=email, password=password)
@@ -60,5 +59,8 @@ class SignUpView(FormView):
         user = authenticate(self.request, username=email, password=password)
         if user is not None:
             login(self.request, user)
+
+        # 계정 생성이 완료된 뒤에 이메일을 발송함
+        user.verify_email()
 
         return super().form_valid(form)
