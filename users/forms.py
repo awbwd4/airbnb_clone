@@ -28,7 +28,7 @@ class SignUpForm(forms.ModelForm):
     ## Model Form은 field의 uniqueness를 알아서 검증해준다
     class Meta:
         model = models.User
-        fields = ("first_name", "last_name", "email", "birthdate")
+        fields = ("first_name", "last_name", "email")
 
     password = forms.CharField(widget=forms.PasswordInput)
     password1 = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
@@ -50,5 +50,7 @@ class SignUpForm(forms.ModelForm):
         password = self.cleaned_data.get("password")
         user.username = email
         user.set_password(password)
+
+        print(user.username)
         user.save()
         # 새로 원하는 필드값을 만든 뒤에 user객체에 덮어씌우기 후 save & commit
