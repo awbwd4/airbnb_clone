@@ -1,3 +1,4 @@
+import os
 from django.views import View
 from django.views.generic import FormView
 from django.urls import reverse_lazy
@@ -71,6 +72,7 @@ def complete_verification(request, key):
     try:
         user = models.User.objects.get(email_secret=key)
         user.email_verified = True
+        user.email_secret = ""
         user.save()
         print("complete_verification_key [%s]" % key)
         # to do : add success msg
@@ -78,3 +80,23 @@ def complete_verification(request, key):
         # to do : add error msg
         pass
     return redirect(reverse("core:home"))
+
+
+def github_login(request):
+
+    # O auth 작동 원리!
+    # 여기서 view는 아무것도 render하지 않는다
+    # 대신,  github로 redirect해줄것
+    # 그 후 사용자가 github에 로그인 하고 git에서 이 웹 애플리케이션을 accept하게 되면,
+    # github는 사용자를 다시 이 웹 애플리케이션(우리 웹사이트)로 redirect한다.
+    # 따라서 "authorization call back URL"은 github가 이 웹사이트를 accept한 뒤 사용자를 돌려보낼 url이다.
+
+    client_id = os.environ.get("GH_ID")
+    redirect_uri = "http://127.0.0.1:8000/users/login/github/callback"
+    return redirect(
+        f"https://github.com/login/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&scope=read:user"
+    )
+
+
+def github_callback(reqeust):
+    pass
