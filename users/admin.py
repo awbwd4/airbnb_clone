@@ -26,6 +26,7 @@ class CustomUserAdmin(UserAdmin):
                     "birthdate",
                     "language",
                     "currency",
+                    "login_method",
                     "superhost",
                 )
             },
@@ -48,4 +49,5 @@ class CustomUserAdmin(UserAdmin):
         "is_superuser",
         "email_verified",
         "email_secret",
+        "login_method",
     )

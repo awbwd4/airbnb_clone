@@ -1,4 +1,6 @@
 import os
+import requests
+from urllib import request
 from django.views import View
 from django.views.generic import FormView
 from django.urls import reverse_lazy
@@ -98,5 +100,61 @@ def github_login(request):
     )
 
 
-def github_callback(reqeust):
-    pass
+def github_callback(request):
+
+    # github 로그인을 요청하면
+    # github_login 메서드에서 보듯이 github은 사용자를 다시 이 웹사이트로 redirect한다.(github/callback)
+    # 이후 이 웹사이트(app)은 access token을 이용해 api에 접근함
+    # request객체 내에 있는 code값으로 이 token과 맞바꿔올수있음
+
+    print(request.GET)
+    print(request.GET.get("code"))
+
+    client_id = os.environ.get("GH_ID")
+    client_secret = os.environ.get("GH_SECRET")
+    code = request.GET.get("code", None)
+
+    print(client_id + " " + client_secret + " " + code)
+
+    if code is not None:
+        result = requests.post(
+            f"https://github.com/login/oauth/access_token?client_id={client_id}&client_secret={client_secret}&code={code}",
+            headers={"Accept": "application/json"},
+        )
+        # 코드를 token과 바꾸기 위해 위 url에 post request를 보냄
+        # token은 response객체에 들어있거나 json으로 받을 수 있음
+        result_json = result.json()
+        error = result_json.get("error", None)
+        if error is not None:
+            return redirect(reverse("users:login"))
+        else:
+            # json으로 받아온 token으로 깃헙 로그인 api에 접근
+            access_token = result_json.get("access_token")
+            profile_request = requests.get(
+                "https://api.github.com/user",
+                headers={
+                    "Authorization": f"token {access_token}",
+                    "Accept": "application/json",
+                },
+            )
+            # api에 접근이 성공한다면, 회원에 대한 여러 정보를 json으로 받아볼수있다.
+            profile_json = profile_request.json()
+            username = profile_json.get("login", None)
+            if username is not None:
+                name = profile_json.get("name")
+                email = profile_json.get("email")
+                bio = profile_json.get("bio")
+                user = models.User.objects.get(email=email)
+                # 이 이메일을 가진 유저가 있다면 그건 이미 로그인이 돼있다는 뜻일것.
+                if user is not None:
+                    return redirect(reverse("users:login"))
+                else:
+                    user = models.User.objects.create(
+                        username=email, first_name=name, bio=bio, email=email
+                    )
+                    login(request, user)
+                    return redirect(reverse("core:home"))
+            else:
+                return redirect(reverse("users:login"))
+    else:
+        return redirect(reverse("core:home"))
