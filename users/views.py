@@ -84,6 +84,13 @@ def complete_verification(request, key):
     return redirect(reverse("core:home"))
 
 
+## 깃헙 로그인
+
+
+class GithubException(Exception):
+    pass
+
+
 def github_login(request):
 
     # O auth 작동 원리!
@@ -98,10 +105,6 @@ def github_login(request):
     return redirect(
         f"https://github.com/login/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&scope=read:user"
     )
-
-
-class GithubException(Exception):
-    pass
 
 
 def github_callback(request):
@@ -188,19 +191,50 @@ def github_callback(request):
         return redirect(reverse("users:login"))
 
 
-def kakao_login(request):
-    api_key = os.environ.get("K_KEY")
-    redirect_uri = "http://127.0.0.1:8000/users/login/kakao/callback"
-    print("kakao api key [%s]" % api_key)
-    return redirect(
-        f"https://kauth.kakao.com/oauth/authorize?client_id={api_key}&redirect_uri={redirect_uri}&response_type=code"
-    )
-
-    f"/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code"
-
-
-def kakao_callback(request):
+### 카카오 로그인
+class KakaoException(Exception):
     pass
 
 
-# "https://kauth.kakao.com/oauth/authorize?client_id=$0309ba4176e7ea5f037773980f40c70e&redirect_uri=$http://127.0.0.1:8000/users/login/kakao_callback&response_type=code"
+def kakao_login(request):
+    client_id = os.environ.get("KAKAO_ID")
+    redirect_uri = "http://127.0.0.1:8000/users/login/kakao/callback"
+    print("kakao api key [%s]" % client_id)
+    return redirect(
+        f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+    )
+
+
+def kakao_callback(request):
+    # git과 같이, 인증 api에 접근하기 위한 토근 발행. code는 리다이렉트 하면서 카카오 서버에서 줬음.
+    try:
+        code = request.GET.get("code")
+        client_id = os.environ.get("KAKAO_ID")
+        redirect_uri = "http://127.0.0.1:8000/users/login/kakao/callback"
+        token_request = requests.get(
+            f"https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id={client_id}&redirect_uri={redirect_uri}&code={code}"
+        )
+        print("========token_request.json() [%s]" % token_request.json())
+        token_json = token_request.json()
+        error = token_json.get("error", None)
+        # token을 받아올때 에러가 나는지 안나는지. 에러가 난다면 json내부에는 "access code"가 아니라 "error" 필드가 생긴다.
+        if error is not None:
+            raise KakaoException
+        access_token = token_json.get("access_token")
+        print("========access_token [%s]" % access_token)
+        profile_request = requests.get(
+            "https://kapi.kakao.com/v2/user/me",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        print("========profile_request.json() [%s]" % profile_request.json())
+        profile_json = profile_request.json()
+        email = profile_json.get("kakao_account").get("email", None)
+        print("=========email [%s]" % email)
+        if email is None:
+            raise KakaoException
+
+        email = profile_json.get("kakao_account").get("email")
+
+    except KakaoException:
+        return redirect(reverse("users:login"))
