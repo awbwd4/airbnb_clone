@@ -84,6 +84,13 @@ def complete_verification(request, key):
     return redirect(reverse("core:home"))
 
 
+## 깃헙 로그인
+
+
+class GithubException(Exception):
+    pass
+
+
 def github_login(request):
 
     # O auth 작동 원리!
@@ -106,55 +113,128 @@ def github_callback(request):
     # github_login 메서드에서 보듯이 github은 사용자를 다시 이 웹사이트로 redirect한다.(github/callback)
     # 이후 이 웹사이트(app)은 access token을 이용해 api에 접근함
     # request객체 내에 있는 code값으로 이 token과 맞바꿔올수있음
+    try:
+        client_id = os.environ.get("GH_ID")
+        client_secret = os.environ.get("GH_SECRET")
+        code = request.GET.get("code", None)
 
-    print(request.GET)
-    print(request.GET.get("code"))
-
-    client_id = os.environ.get("GH_ID")
-    client_secret = os.environ.get("GH_SECRET")
-    code = request.GET.get("code", None)
-
-    print(client_id + " " + client_secret + " " + code)
-
-    if code is not None:
-        result = requests.post(
-            f"https://github.com/login/oauth/access_token?client_id={client_id}&client_secret={client_secret}&code={code}",
-            headers={"Accept": "application/json"},
-        )
-        # 코드를 token과 바꾸기 위해 위 url에 post request를 보냄
-        # token은 response객체에 들어있거나 json으로 받을 수 있음
-        result_json = result.json()
-        error = result_json.get("error", None)
-        if error is not None:
-            return redirect(reverse("users:login"))
-        else:
-            # json으로 받아온 token으로 깃헙 로그인 api에 접근
-            access_token = result_json.get("access_token")
-            profile_request = requests.get(
-                "https://api.github.com/user",
-                headers={
-                    "Authorization": f"token {access_token}",
-                    "Accept": "application/json",
-                },
+        if code is not None:
+            token_request = requests.post(
+                f"https://github.com/login/oauth/access_token?client_id={client_id}&client_secret={client_secret}&code={code}",
+                headers={"Accept": "application/json"},
             )
-            # api에 접근이 성공한다면, 회원에 대한 여러 정보를 json으로 받아볼수있다.
-            profile_json = profile_request.json()
-            username = profile_json.get("login", None)
-            if username is not None:
-                name = profile_json.get("name")
-                email = profile_json.get("email")
-                bio = profile_json.get("bio")
-                user = models.User.objects.get(email=email)
-                # 이 이메일을 가진 유저가 있다면 그건 이미 로그인이 돼있다는 뜻일것.
-                if user is not None:
-                    return redirect(reverse("users:login"))
-                else:
-                    user = models.User.objects.create(
-                        username=email, first_name=name, bio=bio, email=email
-                    )
+            # 코드를 token과 바꾸기 위해 위 url에 post request를 보냄
+            # token은 response객체에 들어있거나 json으로 받을 수 있음
+            token_json = token_request.json()
+            error = token_json.get("error", None)
+            if error is not None:
+                raise GithubException()
+            else:
+                # json으로 받아온 token으로 깃헙 로그인 api에 접근
+                access_token = token_json.get("access_token")
+                profile_request = requests.get(
+                    "https://api.github.com/user",
+                    headers={
+                        "Authorization": f"token {access_token}",
+                        "Accept": "application/json",
+                    },
+                )
+                print("profile_request.json() : [%s]" % profile_request.json())
+                # api에 접근이 성공한다면, 회원에 대한 여러 정보를 json으로 받아볼수있다.
+                profile_json = profile_request.json()
+                username = profile_json.get("login", None)
+                # "login"에 값이 정상적으로 박히면, api가 정상 실행됐다는 것.
+                if username is not None:
+                    name = profile_json.get("name")
+                    email = profile_json.get("email")
+                    bio = profile_json.get("bio")
+                    # 해당 이메일을 가진 다른 유저는 없는가?
+                    try:
+                        # 이미 이 웹사이트에 가입돼있는 github 회원인 경우 : 유저가 가입이 아닌 로그인을 원한다는것.
+                        user = models.User.objects.get(email=email)
+                        if user.login_method != models.User.LOGIN_GITHUB:
+                            # github 로그인으로 들어왔지만 password나 kakao로 가입된 회원일 상황
+                            print(
+                                "========user login method is not github  [%s]========="
+                                % models.User.login_method
+                            )
+                            raise GithubException
+                        else:
+                            print(
+                                "======== user already exists, log user in now ========="
+                            )
+                    except models.User.DoesNotExist:
+                        print(
+                            "======== user does not exists, create user now ========="
+                        )
+                        # github의 계정이 이 웹사이트에 없는 회원일 경우
+                        user = models.User.objects.create(
+                            email=email,
+                            first_name=name,
+                            username=email,
+                            bio=bio,
+                            login_method=models.User.LOGIN_GITHUB,
+                        )
+                        user.set_unusable_password()
+                        user.save()
+                    # 기존회원이든 신규 생성한 회원이든 로그인을 한 뒤에 home으로 보낸다.
                     login(request, user)
                     return redirect(reverse("core:home"))
-            else:
-                return redirect(reverse("users:login"))
-    else:
-        return redirect(reverse("core:home"))
+                else:
+                    # api가 정상 실행되지 않았음.
+                    print("========username is None==========")
+                    raise GithubException()
+        else:
+            raise GithubException()
+    except GithubException:
+        # send error message
+        return redirect(reverse("users:login"))
+
+
+### 카카오 로그인
+class KakaoException(Exception):
+    pass
+
+
+def kakao_login(request):
+    client_id = os.environ.get("KAKAO_ID")
+    redirect_uri = "http://127.0.0.1:8000/users/login/kakao/callback"
+    print("kakao api key [%s]" % client_id)
+    return redirect(
+        f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+    )
+
+
+def kakao_callback(request):
+    # git과 같이, 인증 api에 접근하기 위한 토근 발행. code는 리다이렉트 하면서 카카오 서버에서 줬음.
+    try:
+        code = request.GET.get("code")
+        client_id = os.environ.get("KAKAO_ID")
+        redirect_uri = "http://127.0.0.1:8000/users/login/kakao/callback"
+        token_request = requests.get(
+            f"https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id={client_id}&redirect_uri={redirect_uri}&code={code}"
+        )
+        print("========token_request.json() [%s]" % token_request.json())
+        token_json = token_request.json()
+        error = token_json.get("error", None)
+        # token을 받아올때 에러가 나는지 안나는지. 에러가 난다면 json내부에는 "access code"가 아니라 "error" 필드가 생긴다.
+        if error is not None:
+            raise KakaoException
+        access_token = token_json.get("access_token")
+        print("========access_token [%s]" % access_token)
+        profile_request = requests.get(
+            "https://kapi.kakao.com/v2/user/me",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        print("========profile_request.json() [%s]" % profile_request.json())
+        profile_json = profile_request.json()
+        email = profile_json.get("kakao_account").get("email", None)
+        print("=========email [%s]" % email)
+        if email is None:
+            raise KakaoException
+
+        email = profile_json.get("kakao_account").get("email")
+
+    except KakaoException:
+        return redirect(reverse("users:login"))
