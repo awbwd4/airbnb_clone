@@ -6,6 +6,7 @@ from django.views.generic import FormView
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import authenticate, login, logout
+from django.core.files.base import ContentFile
 from . import forms, models
 
 
@@ -148,6 +149,8 @@ def github_callback(request):
                     name = profile_json.get("name")
                     email = profile_json.get("email")
                     bio = profile_json.get("bio")
+                    profile_image = profile_json.get("avatar_url")
+
                     # 해당 이메일을 가진 다른 유저는 없는가?
                     try:
                         # 이미 이 웹사이트에 가입돼있는 github 회원인 경우 : 유저가 가입이 아닌 로그인을 원한다는것.
@@ -174,9 +177,15 @@ def github_callback(request):
                             username=email,
                             bio=bio,
                             login_method=models.User.LOGIN_GITHUB,
+                            email_verified=True,
                         )
                         user.set_unusable_password()
                         user.save()
+                        if profile_image is not None:
+                            photo_request = requests.get(profile_image)
+                            user.avatar.save(
+                                f"{name}-avatar", ContentFile(photo_request.content)
+                            )
                     # 기존회원이든 신규 생성한 회원이든 로그인을 한 뒤에 home으로 보낸다.
                     login(request, user)
                     return redirect(reverse("core:home"))
@@ -201,7 +210,11 @@ def kakao_login(request):
     redirect_uri = "http://127.0.0.1:8000/users/login/kakao/callback"
     print("kakao api key [%s]" % client_id)
     return redirect(
-        f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+        f"https://kauth.kakao.com/oauth/authorize?"
+        f"client_id={client_id}&"
+        f"redirect_uri={redirect_uri}&"
+        f"response_type=code&"
+        f"scope=account_email"
     )
 
 
@@ -212,29 +225,47 @@ def kakao_callback(request):
         client_id = os.environ.get("KAKAO_ID")
         redirect_uri = "http://127.0.0.1:8000/users/login/kakao/callback"
         token_request = requests.get(
-            f"https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id={client_id}&redirect_uri={redirect_uri}&code={code}"
+            f"https://kauth.kakao.com/oauth/token?grant_type=authorization_code&"
+            f"client_id={client_id}&"
+            f"redirect_uri={redirect_uri}&"
+            f"code={code}"
         )
-        print("========token_request.json() [%s]" % token_request.json())
         token_json = token_request.json()
+
         error = token_json.get("error", None)
         # token을 받아올때 에러가 나는지 안나는지. 에러가 난다면 json내부에는 "access code"가 아니라 "error" 필드가 생긴다.
         if error is not None:
             raise KakaoException
+
         access_token = token_json.get("access_token")
-        print("========access_token [%s]" % access_token)
         profile_request = requests.get(
             "https://kapi.kakao.com/v2/user/me",
             headers={"Authorization": f"Bearer {access_token}"},
         )
-
         print("========profile_request.json() [%s]" % profile_request.json())
+
         profile_json = profile_request.json()
         email = profile_json.get("kakao_account").get("email", None)
-        print("=========email [%s]" % email)
         if email is None:
             raise KakaoException
-
         email = profile_json.get("kakao_account").get("email")
+        nickname = email.split("@")[0]
 
+        try:
+            user = models.User.objects.get(email=email)
+            if user.login_method != models.User.LOGIN_KAKAO:
+                raise KakaoException()
+        except models.User.DoesNotExist:
+            user = models.User.objects.create(
+                email=email,
+                username=email,
+                first_name=nickname,
+                login_method=models.User.LOGIN_KAKAO,
+                email_verified=True,
+            )
+            user.set_unusable_password()
+            user.save()
+        login(request, user)
+        return redirect(reverse("core:home"))
     except KakaoException:
         return redirect(reverse("users:login"))
