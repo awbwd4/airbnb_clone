@@ -1,16 +1,13 @@
-<header>
-  <a href="{% url 'core:home' %}">Nbnb</a>
-  <ul>
+  <ul class="flex items-center text-sm font-medium">
     
     {% if user.is_authenticated %}
-      <li><a href="{%url 'users:logout' %}">Log out</a></li>
+      <li class = "ml-8"><a class="text-gray-800" href="{%url 'users:logout' %}">Log out</a></li>
     {% else %}
-      <li><a href="{%url 'users:login' %}">Log in</a></li>
-      <li><a href="{%url 'users:signup' %}">Sign Up</a></li>
+      <li class = "ml-8 border-b-2 border-white hover:border-b-blue-400"><a class="text-gray-800" href="{%url 'users:login' %}">Log in</a></li>
+      <li class = "ml-8"><a class="text-gray-800" href="{%url 'users:signup' %}">Sign Up</a></li>
     {% endif %}
 
   </ul>
-</header>
 
 <!-- django는 context_processors라는걸 갖고있음
     이게 뭐냐면 template에 정보를 추가하는 함수임
