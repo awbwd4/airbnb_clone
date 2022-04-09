@@ -1,10 +1,10 @@
-  <ul class="flex items-center text-sm font-medium">
+  <ul class="flex items-center text-sm font-medium h-full">
     
     {% if user.is_authenticated %}
-      <li class = "ml-8"><a class="text-gray-800" href="{%url 'users:logout' %}">Log out</a></li>
+      <li class = "nav_link ml-8 border-b-2 border-white hover:border-gray-600 h-full flex items-center"><a class="px-5 py-10 text-gray-800" href="{%url 'users:logout' %}">Log out</a></li>
     {% else %}
-      <li class = "ml-8 border-b-2 border-white hover:border-b-blue-400"><a class="text-gray-800" href="{%url 'users:login' %}">Log in</a></li>
-      <li class = "ml-8"><a class="text-gray-800" href="{%url 'users:signup' %}">Sign Up</a></li>
+      <li class = "nav_link ml-8 border-b-2 border-white h-full flex items-center  hover:border-gray-600 "><a class="px-5 py-10 text-gray-800" href="{%url 'users:login' %}">Log in</a></li>
+      <li class = "nav_link hover:border-gray-600 "><a href="{%url 'users:signup' %}">Sign Up</a></li>
     {% endif %}
 
   </ul>
@@ -16,4 +16,4 @@
 
     이 경우에는 context_precessors가 cookie를 갖고 와서
     user를 찾고 그걸 template에 자동으로 넣어줌
--->
+-->  

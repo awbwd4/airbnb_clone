@@ -5,37 +5,33 @@
 
 {% block content %}
 
-{{now}}
+<div class="container mx-auto ">
 
-{% for room in rooms %}
-<h3>
-    {% comment %} <a href="/rooms/{{room.pk}}"> {% endcomment %}
-        {% comment %} url "url네임스페이스:경로" 아규먼트 {% endcomment %}
-        <a href="{% url 'rooms:detail' room.pk %}">
-            {{room.name}} / ${{room.price}}
-        </a>
-</h3>
-
-
-
-{% endfor %}
-
-<h5>
-
-    {% if page_obj.has_previous %}
-    <a href="?page={{page_obj.previous_page_number}}">Previous</a>
-    {% endif %}
-
-    Page {{page_obj.number}} of {{page_obj.paginator.num_pages}}
-
-
-    {% if page_obj.has_next %}
-    <a href="?page={{page_obj.next_page_number}}">Next</a>
-    {% endif %}
-
-
-</h5>
-
+    <div class="container rounded-lg mx-auto bg-gray-800 h-64 mt-32 mb-20 bg-cover bg-center" style="background-image:url(https://www.goodfon.com/download/anna-asker-by-anna-asker-synth-retrowave-synthwave-fon-new-r/1920x1080/)"></div>
+    
+    <div class="flex flex-wrap -mx-20">
+        {% for room in rooms %}
+            {% include 'partials/room_card.html' with room=room%}
+        {% endfor %}
+    </div>
+        
+        <h5>
+            
+            {% if page_obj.has_previous %}
+            <a href="?page={{page_obj.previous_page_number}}">Previous</a>
+            {% endif %}
+            
+            Page {{page_obj.number}} of {{page_obj.paginator.num_pages}}
+            
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{page_obj.next_page_number}}">Next</a>
+            {% endif %}
+            
+            
+        </h5>
+        
+</div>
 
 {% endblock content %}
 
