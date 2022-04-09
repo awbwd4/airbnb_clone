@@ -20,7 +20,7 @@ class HomeView(ListView):
     """Home View Definition"""
 
     model = models.Room
-    paginate_by = 10
+    paginate_by = 12
     paginate_orphans = 5
     ordering = "created"
     context_object_name = "rooms"
@@ -143,7 +143,7 @@ class SearchView(ListView):
 
                 # 페이지네이팅
                 page = request.GET.get("page", 1)
-                paginator = Paginator(all_rooms, 10)
+                paginator = Paginator(all_rooms, 12)
                 rooms = paginator.get_page(page)
 
                 try:
