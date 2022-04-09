@@ -127,3 +127,9 @@ class Room(core_models.TimeStampModel):
             # return all_ratings / all_reviews
         else:
             return 0
+
+    def first_photo(self):
+        (photo,) = self.photos.all()[:1]
+        # comma를 제외하면 photo 변수에는 queryset이 들어간다.
+        # comma를 넣으면 파이썬은 array의 첫번째 변수를 꺼내라는걸로 인식한다.
+        return photo.file.url
