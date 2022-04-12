@@ -28,21 +28,6 @@
             {% endif %}
                 
 
-            <!-- {{form.first_name}}
-            {{form.last_name}}
-            {{form.email}}
-
-            {{form.password}}
-            {{form.password1}} -->
-            <!-- {{form.as_p}} -->
-<!-- 
-            {% for field in form %}
-              <div class="input">
-                  {{field}}
-              </div>
-            {% endfor %} -->
-
-
         {% for field in form %}
             <div class="input w-full {% if field.errors %}has_error{% endif %}">
                 {{field}}
