@@ -1,0 +1,24 @@
+<form method="POST" class="w-full" >
+<!-- <form method="POST" action="{% url 'users:signup' %}" class="w-full" >
+    form태그의 action은 해당 url로 이 form을 보내주는건데, 보낼곳은 users:signup이다.    
+    html의 form태그는 action이 없을경우 자기 자신의 주소로 데이터를 보내도록 되어있으므로
+    굳이 action을 설절해줄 필요가 없음
+-->
+
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+        <span class="text-red-700 font-medium text-sm">{{error}}</span> 
+        {% endfor %}    
+    {% endif %}
+        
+
+
+    {% for field in form %}
+        {% include "mixins/auth/form_input.html" with field=field %}
+    {% endfor %}
+
+
+    <button class="w-full border-2 font-medium text-lg text-white text-center rounded-sm py-5 bg-red-500">{{cta}}</button>
+</form>

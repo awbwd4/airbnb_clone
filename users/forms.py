@@ -11,7 +11,7 @@ from . import models
 class LoginForm(forms.Form):
     email = forms.EmailField(widget=forms.EmailInput(attrs={"placeholder": "Email"}))
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={"placeholeder": "Password"})
+        widget=forms.PasswordInput(attrs={"placeholder": "Password"})
     )
 
     # 해당 필드값을 확인하고 싶은 경우 반드시 "clean_"이어야 함.
