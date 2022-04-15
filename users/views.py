@@ -56,6 +56,7 @@ class SignUpView(FormView):
     #     "last_name": "Ko",
     #     "email": "endlesswaltz0@naver.com",
     # }
+    print("=============1==================")
 
     def form_valid(self, form):
         form.save()
@@ -64,11 +65,14 @@ class SignUpView(FormView):
         email = form.cleaned_data.get("email")
         password = form.cleaned_data.get("password")
         user = authenticate(self.request, username=email, password=password)
+        print("===========2==================== ")
         if user is not None:
             login(self.request, user)
 
         # 계정 생성이 완료된 뒤에 이메일을 발송함
+        print("============3=================== ")
         user.verify_email()
+        print("=============4================== ")
 
         return super().form_valid(form)
 
