@@ -115,9 +115,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
-    {
-        "NAME": "django.contrib.auth.password_validation.StringPasswordValidator",
-    },
+    # {
+    #     "NAME": "django.contrib.auth.password_validation.StringPasswordValidator",
+    # },
 ]
 
 
@@ -163,3 +163,7 @@ EMAIL_HOST_PASSWORD = os.environ.get("MAILGUN_PASSWORD")
 EMAIL_FROM = "sexy-guy@sandboxa775f8a3470345028f678a8889e60baf.mailgun.org"
 
 AUTH_USER_MODEL = "users.User"
+
+
+# "airbnb_re@sandboxa775f8a3470345028f678a8889e60baf.mailgun.org"
+# "dc4748bd8e09b38d8cbba508696bffbb-162d1f80-c96f5e7b"
