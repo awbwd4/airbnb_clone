@@ -11,8 +11,8 @@ django-cities = "*"
 django-seed = "*"
 psycopg2-binary = "*"
 configparser = "*"
-django-dotenv = "*"
 requests = "*"
+django-dotenv = "*"
 
 [dev-packages]
 flake8 = "*"
